@@ -21,7 +21,7 @@
 }
 ```
 
-## Iniciando com o stipe
+## Iniciando com o stripe
 
 - Criar uma conta no stripe, no caso agora eu já tenho uma, criar um projeto, configurar preções e para ficar mais bonitinho configurar uma marca.
 
