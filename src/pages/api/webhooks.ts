@@ -49,6 +49,7 @@ export default async function weebHooks(
 
     if (relevantEvents.has(type)) {
       try {
+        console.log(type);
         switch (type) {
           case 'customer.subscription.updated':
           case 'customer.subscription.deleted':
@@ -70,7 +71,8 @@ export default async function weebHooks(
           default:
             throw new Error('Event not handled.');
         }
-      } catch {
+      } catch (err) {
+        console.log(err);
         return res.json({ error: 'Webhook Error event is not handled.' });
       }
     }
