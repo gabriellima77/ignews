@@ -1,34 +1,101 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+## Iniciando com Next
 
-## Getting Started
+- yarn create next-app nome-do-app;
 
-First, run the development server:
+## Instalando typescript
 
-```bash
-npm run dev
-# or
-yarn dev
+- yarn add typescript @types/react @types/node -D
+- yarn dev - para fazer a configuração do typescript automática
+
+## Usando Sass
+
+- yarn sass - os arquivos são salvos como nomePágina.module.scss - O module no nome é para criar um escopo para o css, além disso as atribuições não são feitas diretamente em seletores de elemento (h1, body, span), são feitos apenas com classes e id, os seletores de elemento podem ser usado dentro de outros seletos - Ex: <br/>
+
+```scss
+.title {
+  color: red;
+
+  span {
+    color: blue;
+  }
+}
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Iniciando com o stipe
 
-You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
+- Criar uma conta no stripe, no caso agora eu já tenho uma, criar um projeto, configurar preções e para ficar mais bonitinho configurar uma marca.
 
-[API routes](https://nextjs.org/docs/api-routes/introduction) can be accessed on [http://localhost:3000/api/hello](http://localhost:3000/api/hello). This endpoint can be edited in `pages/api/hello.js`.
+- Pegar a api-key e copiar para um arquivo .env.local, nome da variável STRIPE_API_KEY
 
-The `pages/api` directory is mapped to `/api/*`. Files in this directory are treated as [API routes](https://nextjs.org/docs/api-routes/introduction) instead of React pages.
+```unix
+yarn add stripe
+```
 
-## Learn More
+- Agora no arquivo stripe.ts na pasta services
 
-To learn more about Next.js, take a look at the following resources:
+```typescript
+import Stripe from 'stripe';
+import { version } from '../package.json';
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+export const stripe = new Stripe(process.env.STRIPE_API_KEY, {
+  apiVersion: '2020-08-27',
+  appInfo: {
+    name: 'Ignews',
+    version,
+  },
+});
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## Next Auth
 
-## Deploy on Vercel
+- Pasta auth e arquivo [...nextauth].ts
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+```unix
+yarn add next-auth
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+## Usando o FaunaDB
+
+- Criar um db no site do fauna, um índice para onde será guardado os dados.
+- Adicionar a key do db no env.local
+
+```unix
+yarn add faunadb
+```
+
+- Adicionando um valor ao db, se não existir um valor igual
+  Ex:
+
+```javascript
+// O callback foi feito dentro da função NextAuth, abaixo dos providers
+callbacks: {
+  async signIn({ user, account, profile }) {
+    const { email } = user;
+    try {
+      await fauna.query(
+        query.If(
+          query.Not(
+            query.Exists(
+              query.Match(query.Index('user_by_email'), query.Casefold(email))
+            )
+          ),
+          query.Create(query.Collection('users'), { data: { email } }),
+          query.Get(
+            query.Match(query.Index('user_by_email'), query.Casefold(email))
+          )
+        )
+      );
+      return true;
+    } catch {
+      return false;
+    }
+  },
+```
+## Testando Stripe localmente
+
+- É necessário usar o stripe-cli, configurar uma rota no api, que irá receber os eventos
+
+- Apois isso usar `./stripe listen --forward-to http://localhost:3000/api/webhooks`
+
+## CMS (Content Management System)
+
